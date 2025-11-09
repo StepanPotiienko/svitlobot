@@ -1,0 +1,10 @@
+[project]
+name = "power-outage-remainder"
+version = "0.1.0"
+description = "DTEK outage schedules -> Google Calendar reminders"
+authors = [ {name = "", email = ""} ]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q"
+testpaths = ["tests"]
