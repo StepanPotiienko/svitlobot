@@ -1,0 +1,53 @@
+name: Check outage schedule
+
+on:
+  schedule:
+    - cron: "0 */4 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  check-schedule:
+    name: Check schedule (dry-run)
+    runs-on: ubuntu-latest
+    env:
+      DEFAULT_TIMEZONE: Europe/Kyiv
+      TELEGRAM_API_ID: ${{ secrets.TELEGRAM_API_ID }}
+      TELEGRAM_API_HASH: ${{ secrets.TELEGRAM_API_HASH }}
+      TELEGRAM_PHONE: ${{ secrets.TELEGRAM_PHONE }}
+      TELEGRAM_CHANNEL: ${{ secrets.TELEGRAM_CHANNEL }}
+      GOOGLE_CREDENTIALS_JSON: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Write Google credentials (optional)
+        if: ${{ env.GOOGLE_CREDENTIALS_JSON != '' }}
+        run: |
+          echo "$GOOGLE_CREDENTIALS_JSON" > google_credentials.json
+          echo "GOOGLE_CREDENTIALS_PATH=$(pwd)/google_credentials.json" >> $GITHUB_ENV
+
+      - name: Run schedule check (dry-run)
+        run: |
+          mkdir -p workflow-artifacts
+          # Capture stdout/stderr into a log file for later upload
+          python -m power_outage_remainder --dry-run --limit 50 > workflow-artifacts/check.log 2>&1 || true
+        env:
+          GOOGLE_CREDENTIALS_PATH: ${{ env.GOOGLE_CREDENTIALS_PATH }}
+          GOOGLE_TOKEN_PATH: token.json
+
+      - name: Upload run log
+        uses: actions/upload-artifact@v4
+        with:
+          name: schedule-check-log
+          path: workflow-artifacts/check.log
