@@ -1,0 +1,59 @@
+name: Cleanup old outage events
+
+on:
+  schedule:
+    # Run every 5 hours at minute 0
+    - cron: "0 */5 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  cleanup-schedule:
+    name: Cleanup schedule (destructive)
+    runs-on: ubuntu-latest
+    env:
+      DEFAULT_TIMEZONE: Europe/Kyiv
+      TELEGRAM_API_ID: ${{ secrets.TELEGRAM_API_ID }}
+      TELEGRAM_API_HASH: ${{ secrets.TELEGRAM_API_HASH }}
+      TELEGRAM_PHONE: ${{ secrets.TELEGRAM_PHONE }}
+      TELEGRAM_CHANNEL: ${{ secrets.TELEGRAM_CHANNEL }}
+      GOOGLE_CREDENTIALS_JSON: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
+      GOOGLE_TOKEN_JSON: ${{ secrets.GOOGLE_TOKEN_JSON }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+      - name: Write Google credentials (optional)
+        if: ${{ env.GOOGLE_CREDENTIALS_JSON != '' }}
+        run: |
+          echo "$GOOGLE_CREDENTIALS_JSON" > google_credentials.json
+          echo "GOOGLE_CREDENTIALS_PATH=$(pwd)/google_credentials.json" >> $GITHUB_ENV
+          echo "$GOOGLE_CREDENTIALS_JSON" > google_credentials.json
+      - name: Write Google token (optional)
+        if: ${{ env.GOOGLE_TOKEN_JSON != '' }}
+        run: |
+          echo "$GOOGLE_TOKEN_JSON" > token.json
+          echo "GOOGLE_TOKEN_PATH=$(pwd)/token.json" >> $GITHUB_ENV
+          echo "$GOOGLE_TOKEN_JSON" > token.json
+          echo "GOOGLE_TOKEN_PATH=$(pwd)/token.json" >> $GITHUB_ENV
+
+      - name: Run cleanup (remove old outage events)
+        run: |
+          mkdir -p workflow-artifacts
+          # Run the CLI in cleanup mode; this will delete events outside today/tomorrow.
+          # Ensure secrets are configured correctly before enabling this workflow.
+          python -m power_outage_remainder --cleanup --yes > workflow-artifacts/cleanup.log 2>&1 || true
+
+      - name: Upload cleanup run log
+        uses: actions/upload-artifact@v4
+        with:
+          name: cleanup-run-log
+          path: workflow-artifacts/cleanup.log
