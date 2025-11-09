@@ -7,3 +7,8 @@ credentials.json
 dist/
 build/
 *.egg-info
+*.session
+session_name.session
+token.json
+google_credentials.json
+*.keygithub.com:StepanPotiienko/svitlobot.git
