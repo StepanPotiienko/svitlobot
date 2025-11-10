@@ -1,5 +1,8 @@
 name: Sync outage schedule and cleanup
 
+permissions:
+  contents: write
+
 on:
   schedule:
     # Run every 5 hours at minute 0
@@ -94,8 +97,9 @@ jobs:
           cp workflow-artifacts/dryrun.log snapshots/last_dryrun.log
           git add snapshots/last_dryrun.log
           git commit -m "chore: update outage snapshot [ci skip]" || echo "no changes to commit"
-          # Push using the provided token
-          git push "https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" HEAD:${{ github.ref_name }} || true
+          # Push using checkout-provided credentials (GITHUB_TOKEN). Ensure workflow
+          # permissions allow write to contents (set above).
+          git push origin HEAD:${{ github.ref_name }} || true
 
       - name: Upload run logs
         uses: actions/upload-artifact@v4
