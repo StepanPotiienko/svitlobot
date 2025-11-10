@@ -156,23 +156,44 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p workflow-artifacts
-          files=(workflow-artifacts/*.log)
-          # List of env vars that may contain secrets to redact
-          secrets=("TELEGRAM_BOT_TOKEN" "TELEGRAM_SESSION_B64" "TELEGRAM_API_HASH" "TELEGRAM_API_ID" "TELEGRAM_PHONE" "GOOGLE_CREDENTIALS_JSON" "GOOGLE_TOKEN_JSON")
-          for f in "${files[@]}"; do
-            [ -f "$f" ] || continue
-            for s in "${secrets[@]}"; do
-              val="${!s:-}"
-              if [ -n "$val" ]; then
-                # Replace literal value occurrences with [REDACTED]
-                # Use perl for robust in-place binary-safe replacement
-                perl -0777 -pe "s/\Q$val\E/[REDACTED]/g" -i "$f" || true
-              fi
-            done
-            # Additionally redact any obvious tokens (long base64-like strings)
-            # Replace long continuous strings of 20+ non-whitespace chars with [REDACTED_TOKEN]
-            perl -0777 -pe "s/([A-Za-z0-9_\-]{20,})/[REDACTED_TOKEN]/g" -i "$f" || true
-          done
+          # Use a small Python sanitizer to avoid shell/regex quoting issues with secrets
+          python - <<'PY'
+          import os, glob, re
+
+          secrets = [
+              "TELEGRAM_BOT_TOKEN",
+              "TELEGRAM_SESSION_B64",
+              "TELEGRAM_API_HASH",
+              "TELEGRAM_API_ID",
+              "TELEGRAM_PHONE",
+              "GOOGLE_CREDENTIALS_JSON",
+              "GOOGLE_TOKEN_JSON",
+          ]
+
+          for path in glob.glob('workflow-artifacts/*.log'):
+              try:
+                  with open(path, 'rb') as fh:
+                      data = fh.read().decode('utf-8', errors='ignore')
+              except Exception:
+                  # If file unreadable for some reason, skip
+                  continue
+
+              # Replace literal secret values with a named redact token
+              for name in secrets:
+                  val = os.environ.get(name)
+                  if val:
+                      data = data.replace(val, f'[REDACTED_{name}]')
+
+              # Additionally redact any obvious tokens (20+ alnum/_- chars)
+              data = re.sub(r'[A-Za-z0-9_\-]{20,}', '[REDACTED_TOKEN]', data)
+
+              try:
+                  with open(path, 'w', encoding='utf-8') as fh:
+                      fh.write(data)
+              except Exception:
+                  # best-effort only
+                  pass
+          PY
 
       - name: Upload sanitized logs
         if: always()
