@@ -55,9 +55,14 @@ async def fetch_channel_messages(
             # Non-interactive bot login
             await client.start(bot_token=bot_token)  # type: ignore
         else:
-            # User login (may require interactive code) — CI should provide
-            # a pre-authorized session file instead.
-            await client.start(phone=phone)  # type: ignore
+            # Do NOT attempt interactive phone login in CI/non-interactive runs.
+            # Fail early with a clear error so callers (and CI) can provide a
+            # non-interactive authentication method instead of hanging on input().
+            raise RuntimeError(
+                "No non-interactive Telegram authentication available. "
+                "Provide TELEGRAM_SESSION_B64 (preferred) or TELEGRAM_BOT_TOKEN, "
+                "or run locally to create a session file."
+            )
 
         # Fetch messages from channel
         async for message in client.iter_messages(channel, limit=limit):
@@ -66,7 +71,11 @@ async def fetch_channel_messages(
                     {"id": message.id, "date": message.date, "text": message.text}
                 )
     finally:
-        await client.disconnect()  # type: ignore
+        try:
+            await client.disconnect()  # type: ignore
+        except Exception:
+            # Best-effort disconnect; ignore errors during cleanup
+            pass
 
     return messages
 
