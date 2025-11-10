@@ -55,6 +55,27 @@ jobs:
           echo "Running dry-run to produce snapshot"
           python -m power_outage_remainder --dry-run --limit 50 > workflow-artifacts/dryrun.log 2>&1 || true
 
+      - name: Check Telegram credentials present
+        id: creds
+        run: |
+          if [ -z "${{ env.TELEGRAM_API_ID }}" ] || [ -z "${{ env.TELEGRAM_API_HASH }}" ] || [ -z "${{ env.TELEGRAM_PHONE }}" ] || [ -z "${{ env.TELEGRAM_CHANNEL }}" ]; then
+            echo "has_creds=false" >> $GITHUB_OUTPUT
+          else
+            echo "has_creds=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Fail when Telegram credentials missing
+        if: ${{ steps.creds.outputs.has_creds == 'false' }}
+        run: |
+          missing=""
+          if [ -z "${{ env.TELEGRAM_API_ID }}" ]; then missing="$missing TELEGRAM_API_ID"; fi
+          if [ -z "${{ env.TELEGRAM_API_HASH }}" ]; then missing="$missing TELEGRAM_API_HASH"; fi
+          if [ -z "${{ env.TELEGRAM_PHONE }}" ]; then missing="$missing TELEGRAM_PHONE"; fi
+          if [ -z "${{ env.TELEGRAM_CHANNEL }}" ]; then missing="$missing TELEGRAM_CHANNEL"; fi
+          echo "ERROR: Missing Telegram secrets:$missing" >&2
+          echo "Please set these repository secrets (Settings → Secrets) and re-run the workflow." >&2
+          exit 1
+
       - name: Compare snapshot with previous
         id: compare
         run: |
@@ -67,6 +88,19 @@ jobs:
             fi
           else
             echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check Google credentials before creating/cleaning (only if schedule changed)
+        if: ${{ steps.compare.outputs.changed == 'true' }}
+        id: check_google
+        run: |
+          missing=""
+          if [ -z "${{ env.GOOGLE_CREDENTIALS_JSON }}" ]; then missing="$missing GOOGLE_CREDENTIALS_JSON"; fi
+          if [ -z "${{ env.GOOGLE_TOKEN_JSON }}" ]; then missing="$missing GOOGLE_TOKEN_JSON"; fi
+          if [ -n "$missing" ]; then
+            echo "ERROR: Missing Google secrets:$missing" >&2
+            echo "These are required to create or delete Calendar events non-interactively." >&2
+            exit 1
           fi
 
       - name: Create events (only if schedule changed)
