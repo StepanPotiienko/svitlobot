@@ -12,7 +12,11 @@ from typing import Any, Dict, List, Optional, cast
 
 
 async def fetch_channel_messages(
-    api_id: int, api_hash: str, phone: str, channel: str, limit: int = 50
+    api_id: int,
+    api_hash: str,
+    phone: Optional[str],
+    channel: str,
+    limit: int = 50,
 ) -> List[Dict]:
     """Fetch recent messages from a Telegram channel.
 
@@ -31,11 +35,29 @@ async def fetch_channel_messages(
     except ImportError as e:
         raise RuntimeError("Telethon is required. Install from requirements.txt") from e
 
+    from pathlib import Path
+
     client = TelegramClient("session_name", api_id, api_hash)
+
+    # Priority of authentication methods in CI/non-interactive runs:
+    # 1) Restored user session file (session_name.session) — preferred
+    # 2) Bot token via TELEGRAM_BOT_TOKEN
+    # 3) Interactive phone login (requires local interaction / session file)
+    bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
+    session_file = Path("session_name.session")
 
     messages = []
     try:
-        await client.start(phone=phone)  # type: ignore
+        if session_file.exists():
+            # Use restored/pre-existing user session (non-interactive).
+            await client.start()  # type: ignore
+        elif bot_token:
+            # Non-interactive bot login
+            await client.start(bot_token=bot_token)  # type: ignore
+        else:
+            # User login (may require interactive code) — CI should provide
+            # a pre-authorized session file instead.
+            await client.start(phone=phone)  # type: ignore
 
         # Fetch messages from channel
         async for message in client.iter_messages(channel, limit=limit):
