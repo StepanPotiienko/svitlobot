@@ -48,16 +48,45 @@ async def fetch_channel_messages(
 
     messages = []
     try:
+        # Prefer restored user session, but don't call start() without args
+        # because that may trigger interactive prompts. Instead, connect and
+        # check authorization state first.
         if session_file.exists():
-            # Use restored/pre-existing user session (non-interactive).
-            await client.start()  # type: ignore
+            print(f"[DEBUG] Found session file at {session_file}, connecting...")
+            await client.connect()  # type: ignore
+            try:
+                authorized = await client.is_user_authorized()  # type: ignore
+            except Exception:
+                authorized = False
+
+            if not authorized:
+                # Session file exists but is not usable. Fall back to bot token
+                # if provided, otherwise fail with a clear message.
+                print("[DEBUG] Session file not authorized, trying bot token...")
+                if bot_token:
+                    try:
+                        print("[DEBUG] Starting with bot token (TELEGRAM_BOT_TOKEN)")
+                        await client.start(bot_token=bot_token)  # type: ignore
+                    except Exception as e:
+                        raise RuntimeError(
+                            "Failed to start Telethon with bot token: %s" % e
+                        )
+                else:
+                    raise RuntimeError(
+                        "Found session file but it is not authorized. "
+                        "Provide a valid TELEGRAM_SESSION_B64 or TELEGRAM_BOT_TOKEN."
+                    )
+            else:
+                print("[DEBUG] Session file authorized, using restored user session")
         elif bot_token:
             # Non-interactive bot login
+            print(
+                "[DEBUG] No session file, starting with bot token (TELEGRAM_BOT_TOKEN)"
+            )
             await client.start(bot_token=bot_token)  # type: ignore
         else:
-            # Do NOT attempt interactive phone login in CI/non-interactive runs.
-            # Fail early with a clear error so callers (and CI) can provide a
-            # non-interactive authentication method instead of hanging on input().
+            # Don't attempt interactive phone login in CI/non-interactive runs.
+            print("[DEBUG] No session file or bot token found")
             raise RuntimeError(
                 "No non-interactive Telegram authentication available. "
                 "Provide TELEGRAM_SESSION_B64 (preferred) or TELEGRAM_BOT_TOKEN, "
