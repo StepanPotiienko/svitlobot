@@ -263,12 +263,52 @@ async def main_async(argv=None):
         from power_outage_remainder.calendar_integration import (
             create_event,
             get_service,
+            list_events,
         )
 
         service = get_service(creds_path, token_path)
-        print(f"\nCreating events in calendar: {calendar_id}")
+        print(f"\nChecking for existing events in calendar: {calendar_id}")
+
+        # Fetch existing outage events within the time window (today and tomorrow)
+        window_min = (
+            datetime.combine(today, datetime.min.time()).replace(tzinfo=tz).isoformat()
+        )
+        window_max = (
+            datetime.combine(tomorrow, datetime.max.time())
+            .replace(tzinfo=tz)
+            .isoformat()
+        )
+
+        existing_events = []
+        for ev in list_events(
+            service, calendar_id, time_min=window_min, time_max=window_max
+        ):
+            summary = ev.get("summary", "")
+            # Only consider events that look like our outage reminders
+            if summary.startswith("⚡ Відключення світла"):
+                existing_events.append(
+                    {
+                        "summary": summary,
+                        "start": ev.get("start", {}).get("dateTime"),
+                        "end": ev.get("end", {}).get("dateTime"),
+                    }
+                )
+
+        print(f"Found {len(existing_events)} existing outage event(s)")
+
+        def event_exists(new_event):
+            """Check if an event with the same summary, start, and end already exists."""
+            for existing in existing_events:
+                if (
+                    existing["summary"] == new_event["summary"]
+                    and existing["start"] == new_event["start"]["dateTime"]
+                    and existing["end"] == new_event["end"]["dateTime"]
+                ):
+                    return True
+            return False
 
         created_count = 0
+        skipped_count = 0
         for date_key, outages in sorted(outages_by_date.items()):
             for outage in outages:
                 # Apply same group filter before creating events
@@ -276,11 +316,20 @@ async def main_async(argv=None):
                     continue
 
                 event = build_event_from_outage(outage)
+
+                # Check if this event already exists
+                if event_exists(event):
+                    print(f"  ⊘ Skipped (already exists): {event['summary']}")
+                    skipped_count += 1
+                    continue
+
                 created = create_event(service, calendar_id, event)
                 print(f"  ✓ Created: {created.get('htmlLink')}")
                 created_count += 1
 
-        print(f"\n✓ Successfully created {created_count} event(s)")
+        print(
+            f"\n✓ Successfully created {created_count} event(s), skipped {skipped_count} duplicate(s)"
+        )
 
 
 def main(argv=None):
