@@ -3,7 +3,7 @@ Fetching up to 50 messages from @svitlobot_downsprings...
 [DEBUG] Session file authorized, using restored user session
 Pruned 3 past date(s); keeping only today and tomorrow: ['2025-11-11', '2025-11-12']
 
-Found outages for 1 date(s):
+Found outages for 2 date(s):
 
 2025-11-11: 4 outage(s)
   - ⚡ Відключення світла: Група 1.2 (Група 1.2)
@@ -18,3 +18,14 @@ Found outages for 1 date(s):
   - ⚡ Відключення світла: Група 1.2 (Група 1.2)
     Start: 2025-11-11T16:00:00+02:00
     End: 2025-11-11T20:00:00+02:00
+
+2025-11-12: 3 outage(s)
+  - ⚡ Відключення світла: Група 1.2 (Група 1.2)
+    Start: 2025-11-12T02:30:00+02:00
+    End: 2025-11-12T06:00:00+02:00
+  - ⚡ Відключення світла: Група 1.2 (Група 1.2)
+    Start: 2025-11-12T13:00:00+02:00
+    End: 2025-11-12T16:30:00+02:00
+  - ⚡ Відключення світла: Група 1.2 (Група 1.2)
+    Start: 2025-11-12T23:30:00+02:00
+    End: 2025-11-13T00:00:00+02:00
