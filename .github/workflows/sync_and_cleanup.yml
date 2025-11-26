@@ -103,8 +103,7 @@ jobs:
             echo "changed=true" >> $GITHUB_OUTPUT
           fi
 
-      - name: Check Google credentials before creating/cleaning (only if schedule changed)
-        if: ${{ steps.compare.outputs.changed == 'true' }}
+      - name: Check Google credentials
         id: check_google
         run: |
           missing=""
@@ -116,21 +115,20 @@ jobs:
             exit 1
           fi
 
-      - name: Create events (only if schedule changed)
-        if: ${{ steps.compare.outputs.changed == 'true' }}
+      - name: Cleanup old events (runs every time)
         run: |
-          echo "Schedule changed: creating events"
+          echo "Running cleanup to remove old events"
           mkdir -p workflow-artifacts
-          python -m power_outage_remainder --limit 50 > workflow-artifacts/create.log 2>&1 || true
+          python -m power_outage_remainder --cleanup --yes > workflow-artifacts/cleanup.log 2>&1 || true
         env:
           GOOGLE_CREDENTIALS_PATH: ${{ env.GOOGLE_CREDENTIALS_PATH }}
           GOOGLE_TOKEN_PATH: ${{ env.GOOGLE_TOKEN_PATH }}
 
-      - name: Cleanup (only if schedule changed)
+      - name: Create events (only if schedule changed)
         if: ${{ steps.compare.outputs.changed == 'true' }}
         run: |
-          echo "Schedule changed: running cleanup"
-          python -m power_outage_remainder --cleanup --yes > workflow-artifacts/cleanup.log 2>&1 || true
+          echo "Schedule changed: creating events"
+          python -m power_outage_remainder --limit 50 > workflow-artifacts/create.log 2>&1 || true
         env:
           GOOGLE_CREDENTIALS_PATH: ${{ env.GOOGLE_CREDENTIALS_PATH }}
           GOOGLE_TOKEN_PATH: ${{ env.GOOGLE_TOKEN_PATH }}
