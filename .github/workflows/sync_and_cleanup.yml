@@ -115,20 +115,20 @@ jobs:
             exit 1
           fi
 
-      - name: Cleanup old events (runs every time)
+      - name: Cleanup old events and create new ones (runs every time)
         run: |
-          echo "Running cleanup to remove old events"
-          mkdir -p workflow-artifacts
-          python -m power_outage_remainder --cleanup --yes > workflow-artifacts/cleanup.log 2>&1 || true
-        env:
-          GOOGLE_CREDENTIALS_PATH: ${{ env.GOOGLE_CREDENTIALS_PATH }}
-          GOOGLE_TOKEN_PATH: ${{ env.GOOGLE_TOKEN_PATH }}
-
-      - name: Create events (only if schedule changed)
-        if: ${{ steps.compare.outputs.changed == 'true' }}
-        run: |
-          echo "Schedule changed: creating events"
-          python -m power_outage_remainder --limit 50 > workflow-artifacts/create.log 2>&1 || true
+          echo "========== CLEANUP PHASE =========="
+          python -m power_outage_remainder --cleanup --yes 2>&1 | tee workflow-artifacts/cleanup.log || true
+          echo ""
+          echo "========== CREATE PHASE =========="
+          python -m power_outage_remainder --limit 50 2>&1 | tee workflow-artifacts/create.log || true
+          echo ""
+          echo "========== LOGS CAPTURED =========="
+          echo "Cleanup log:"
+          cat workflow-artifacts/cleanup.log || echo "No cleanup log found"
+          echo ""
+          echo "Create log:"
+          cat workflow-artifacts/create.log || echo "No create log found"
         env:
           GOOGLE_CREDENTIALS_PATH: ${{ env.GOOGLE_CREDENTIALS_PATH }}
           GOOGLE_TOKEN_PATH: ${{ env.GOOGLE_TOKEN_PATH }}
