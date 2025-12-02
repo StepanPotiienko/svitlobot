@@ -1,17 +1,9 @@
 Fetching up to 50 messages from @svitlobot_downsprings...
 [DEBUG] Found session file at session_name.session, connecting...
 [DEBUG] Session file authorized, using restored user session
-Pruned 2 past date(s); keeping only today and tomorrow: ['2025-12-02', '2025-12-03']
+Pruned 3 past date(s); keeping only today and tomorrow: ['2025-12-03', '2025-12-04']
 
-Found outages for 2 date(s):
-
-2025-12-02: 2 outage(s)
-  - ⚡ Відключення світла: Група 1.2 (Група 1.2)
-    Start: 2025-12-02T06:00:00+02:00
-    End: 2025-12-02T09:30:00+02:00
-  - ⚡ Відключення світла: Група 1.2 (Група 1.2)
-    Start: 2025-12-02T16:00:00+02:00
-    End: 2025-12-02T20:00:00+02:00
+Found outages for 1 date(s):
 
 2025-12-03: 1 outage(s)
   - ⚡ Відключення світла: Група 1.2 (Група 1.2)
