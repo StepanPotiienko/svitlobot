@@ -1,7 +1,7 @@
 Fetching up to 50 messages from @svitlobot_downsprings...
 [DEBUG] Found session file at session_name.session, connecting...
 [DEBUG] Session file authorized, using restored user session
-Pruned 4 past date(s); keeping only today and tomorrow: ['2025-12-02', '2025-12-03']
+Pruned 3 past date(s); keeping only today and tomorrow: ['2025-12-02', '2025-12-03']
 
 Found outages for 1 date(s):
 
