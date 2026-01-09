@@ -1,32 +1,20 @@
-Traceback (most recent call last):
-  File "<frozen runpy>", line 198, in _run_module_as_main
-  File "<frozen runpy>", line 88, in _run_code
-  File "/home/runner/work/svitlobot/svitlobot/power_outage_remainder/__main__.py", line 6, in <module>
-    main()
-  File "/home/runner/work/svitlobot/svitlobot/power_outage_remainder/cli.py", line 337, in main
-    asyncio.run(main_async(argv))
-  File "/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/asyncio/runners.py", line 190, in run
-    return runner.run(main)
-           ^^^^^^^^^^^^^^^^
-  File "/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/asyncio/runners.py", line 118, in run
-    return self._loop.run_until_complete(task)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/asyncio/base_events.py", line 654, in run_until_complete
-    return future.result()
-           ^^^^^^^^^^^^^^^
-  File "/home/runner/work/svitlobot/svitlobot/power_outage_remainder/cli.py", line 130, in main_async
-    outages_by_date = await fetch_and_parse_outages(
-                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/runner/work/svitlobot/svitlobot/power_outage_remainder/scraper.py", line 399, in fetch_and_parse_outages
-    return parse_messages_to_dict(messages)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/runner/work/svitlobot/svitlobot/power_outage_remainder/scraper.py", line 342, in parse_messages_to_dict
-    outage_info = extract_outage_info(text, msg_date)  # type: ignore
-                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/runner/work/svitlobot/svitlobot/power_outage_remainder/scraper.py", line 293, in extract_outage_info
-    end_dt = datetime(
-             ^^^^^^^^^
-ValueError: hour must be in 0..23
 Fetching up to 50 messages from @svitlobot_downsprings...
 [DEBUG] Found session file at session_name.session, connecting...
 [DEBUG] Session file authorized, using restored user session
+Pruned 4 past date(s); keeping only today and tomorrow: ['2026-01-09', '2026-01-10']
+
+Found outages for 1 date(s):
+
+2026-01-09: 4 outage(s)
+  - ⚡ Відключення світла: Група 1.2 (Група 1.2)
+    Start: 2026-01-09T06:30:00+02:00
+    End: 2026-01-09T10:30:00+02:00
+  - ⚡ Відключення світла: Група 1.2 (Група 1.2)
+    Start: 2026-01-09T17:00:00+02:00
+    End: 2026-01-09T21:00:00+02:00
+  - ⚡ Відключення світла: Група 1.2 (Група 1.2)
+    Start: 2026-01-09T06:30:00+02:00
+    End: 2026-01-09T10:30:00+02:00
+  - ⚡ Відключення світла: Група 1.2 (Група 1.2)
+    Start: 2026-01-09T17:00:00+02:00
+    End: 2026-01-09T21:00:00+02:00
