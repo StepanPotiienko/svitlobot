@@ -23,9 +23,9 @@ Traceback (most recent call last):
   File "/home/runner/work/svitlobot/svitlobot/power_outage_remainder/scraper.py", line 342, in parse_messages_to_dict
     outage_info = extract_outage_info(text, msg_date)  # type: ignore
                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/runner/work/svitlobot/svitlobot/power_outage_remainder/scraper.py", line 285, in extract_outage_info
-    start_dt = datetime(
-               ^^^^^^^^^
+  File "/home/runner/work/svitlobot/svitlobot/power_outage_remainder/scraper.py", line 293, in extract_outage_info
+    end_dt = datetime(
+             ^^^^^^^^^
 ValueError: hour must be in 0..23
 Fetching up to 50 messages from @svitlobot_downsprings...
 [DEBUG] Found session file at session_name.session, connecting...
