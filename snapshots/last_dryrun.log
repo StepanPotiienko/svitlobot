@@ -1,4 +1,23 @@
 Traceback (most recent call last):
+  File "/home/runner/work/svitlobot/svitlobot/power_outage_remainder/scraper.py", line 69, in fetch_channel_messages
+    await client.start(bot_token=bot_token)  # type: ignore
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/site-packages/telethon/client/auth.py", line 179, in _start
+    await self.sign_in(bot_token=bot_token)
+  File "/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/site-packages/telethon/client/auth.py", line 359, in sign_in
+    result = await self(request)
+             ^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/site-packages/telethon/client/users.py", line 30, in __call__
+    return await self._call(self._sender, request, ordered=ordered)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/site-packages/telethon/client/users.py", line 92, in _call
+    result = await future
+             ^^^^^^^^^^^^
+telethon.errors.rpcerrorlist.AccessTokenInvalidError: The provided token is not valid (caused by ImportBotAuthorizationRequest)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
   File "<frozen runpy>", line 198, in _run_module_as_main
   File "<frozen runpy>", line 88, in _run_code
   File "/home/runner/work/svitlobot/svitlobot/power_outage_remainder/__main__.py", line 6, in <module>
@@ -17,16 +36,13 @@ Traceback (most recent call last):
   File "/home/runner/work/svitlobot/svitlobot/power_outage_remainder/cli.py", line 130, in main_async
     outages_by_date = await fetch_and_parse_outages(
                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/runner/work/svitlobot/svitlobot/power_outage_remainder/scraper.py", line 399, in fetch_and_parse_outages
-    return parse_messages_to_dict(messages)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/runner/work/svitlobot/svitlobot/power_outage_remainder/scraper.py", line 342, in parse_messages_to_dict
-    outage_info = extract_outage_info(text, msg_date)  # type: ignore
-                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/runner/work/svitlobot/svitlobot/power_outage_remainder/scraper.py", line 293, in extract_outage_info
-    end_dt = datetime(
-             ^^^^^^^^^
-ValueError: hour must be in 0..23
+  File "/home/runner/work/svitlobot/svitlobot/power_outage_remainder/scraper.py", line 398, in fetch_and_parse_outages
+    messages = await fetch_channel_messages(api_id, api_hash, phone, channel, limit)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/svitlobot/svitlobot/power_outage_remainder/scraper.py", line 71, in fetch_channel_messages
+    raise RuntimeError(
+RuntimeError: Failed to start Telethon with bot token: The provided token is not valid (caused by ImportBotAuthorizationRequest)
 Fetching up to 50 messages from @svitlobot_downsprings...
 [DEBUG] Found session file at session_name.session, connecting...
-[DEBUG] Session file authorized, using restored user session
+[DEBUG] Session file not authorized, trying bot token...
+[DEBUG] Starting with bot token (TELEGRAM_BOT_TOKEN)
